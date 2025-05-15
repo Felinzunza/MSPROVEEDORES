@@ -32,7 +32,7 @@ public class ProveedorController {
         if (proveedores.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(proveedores, HttpStatus.ACCEPTED);
         
     }
     
