@@ -2,6 +2,7 @@ package com.MSPROVEEDORES.MSPROVEEDORES.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedor;
@@ -10,6 +11,7 @@ import com.MSPROVEEDORES.MSPROVEEDORES.repo.PedidoProveedorRepository;
 @Service
 public class PedidoProveedorService {
     
+    @Autowired
     private PedidoProveedorRepository pedidoProveedorRepository;
 
     public List<PedidoProveedor>listaPedidos() {

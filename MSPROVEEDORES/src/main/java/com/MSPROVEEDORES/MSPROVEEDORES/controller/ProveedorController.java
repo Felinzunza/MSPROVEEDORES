@@ -45,7 +45,7 @@ public class ProveedorController {
         return new ResponseEntity<>(proveedor, HttpStatus.OK);
     }
 
-    @GetMapping("{rut}")
+    @GetMapping("/rut/{rut}")
     public ResponseEntity<Proveedor> getProveedorByRut(@PathVariable String rut) {
         Proveedor proveedor = proveedorService.getProveedorByRut(rut);
         if (proveedor == null) {
