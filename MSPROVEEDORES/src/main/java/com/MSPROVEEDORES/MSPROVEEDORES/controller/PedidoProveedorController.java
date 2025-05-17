@@ -17,7 +17,7 @@ import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedor;
 import com.MSPROVEEDORES.MSPROVEEDORES.service.PedidoProveedorService;
 
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("/api/pedidos")
 public class PedidoProveedorController {
 
     @Autowired
