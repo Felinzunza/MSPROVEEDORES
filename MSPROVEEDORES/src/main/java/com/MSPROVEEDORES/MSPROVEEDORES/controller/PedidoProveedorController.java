@@ -7,12 +7,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.MSPROVEEDORES.MSPROVEEDORES.model.EnumEstado;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedor;
 import com.MSPROVEEDORES.MSPROVEEDORES.service.PedidoProveedorService;
 
@@ -61,6 +64,16 @@ public class PedidoProveedorController {
         }
         pedidoProveedorService.eliminarPedido(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PatchMapping("/{id}/cambiarEstado") //llamarlo desde la url asi: http://localhost:8080/api/pedidos/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corrsponda a la enum)
+    public ResponseEntity<PedidoProveedor>cambiarEstado(@PathVariable int id, @RequestParam EnumEstado estado){
+        PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
+        if (pedido == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        pedido.setEstado(estado);
+        return new ResponseEntity<>(pedidoProveedorService.guardarPedido(pedido), HttpStatus.OK);
     }
 
 
