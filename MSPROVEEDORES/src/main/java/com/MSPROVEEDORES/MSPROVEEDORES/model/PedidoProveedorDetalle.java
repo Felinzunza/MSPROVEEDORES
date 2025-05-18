@@ -1,9 +1,13 @@
 package com.MSPROVEEDORES.MSPROVEEDORES.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +29,12 @@ private int cod_Producto;
 
 @Column(nullable = false)
 private int cantidad;
+
+@ManyToOne
+@JoinColumn(name = "idPedProFk")
+@JsonBackReference
+private PedidoProveedor pedidoProveedor;
+
 
 }
 

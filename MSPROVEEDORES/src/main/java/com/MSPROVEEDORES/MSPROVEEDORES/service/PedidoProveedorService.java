@@ -7,19 +7,35 @@ import org.springframework.stereotype.Service;
 
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedor;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedorDetalle;
+import com.MSPROVEEDORES.MSPROVEEDORES.model.Proveedor;
 import com.MSPROVEEDORES.MSPROVEEDORES.repo.PedidoProveedorRepository;
 
 @Service
 public class PedidoProveedorService {
-    
+
+    @Autowired
+    private ProveedorService proveedorService;
+
     @Autowired
     private PedidoProveedorRepository pedidoProveedorRepository;
+
+   
 
     public List<PedidoProveedor>listaPedidos() {
         return pedidoProveedorRepository.findAll();
     }
 
     public PedidoProveedor guardarPedido(PedidoProveedor pedidoProveedor) {
+        if (pedidoProveedor.getProveedor() != null) {
+        Proveedor proveedor = proveedorService.getProveedorById(pedidoProveedor.getProveedor().getIdProveedor());
+        pedidoProveedor.setProveedor(proveedor); // enlazar con proveedor existente
+        }
+
+        if (pedidoProveedor.getDetallePedidoProveedor() != null) { //for agregado el 18/05 para enlazar con detalle y crear pedido directamente con detalles
+            for (PedidoProveedorDetalle detalle : pedidoProveedor.getDetallePedidoProveedor()) {
+                detalle.setPedidoProveedor(pedidoProveedor);
+            }
+        }
         return pedidoProveedorRepository.save(pedidoProveedor);
     }
 
@@ -38,6 +54,10 @@ public class PedidoProveedorService {
         PedidoProveedor pedido = pedidoProveedorRepository.findById(idPedido);
         if (pedido == null) return null;
 
+        // Enlazar el detalle al pedido
+        nuevoDetalle.setPedidoProveedor(pedido); //esto me falto
+
+        // Agregar el detalle a la lista
         pedido.getDetallePedidoProveedor().add(nuevoDetalle);
         return pedidoProveedorRepository.save(pedido);
         }

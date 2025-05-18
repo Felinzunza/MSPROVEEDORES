@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,8 +44,8 @@ public class PedidoProveedor {
     @Column(nullable = false)
     private LocalDate fechaRecepcionEsperada;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "idPedProFk") //se crea esta columna como FK en la tabla detalle
+    @OneToMany(mappedBy = "pedidoProveedor", cascade = CascadeType.ALL, orphanRemoval = true) 
+    @JsonManagedReference //evita bucle infinito al serializar y me devuelve solo el id, no el cuerpo json
     private List<PedidoProveedorDetalle> detallePedidoProveedor;
  
     @Enumerated(EnumType.STRING)

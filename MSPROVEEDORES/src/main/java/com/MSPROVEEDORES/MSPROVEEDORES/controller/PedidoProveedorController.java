@@ -19,6 +19,7 @@ import com.MSPROVEEDORES.MSPROVEEDORES.model.EnumEstado;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedor;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedorDetalle;
 import com.MSPROVEEDORES.MSPROVEEDORES.service.PedidoProveedorService;
+import com.MSPROVEEDORES.MSPROVEEDORES.service.ProveedorService;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -27,6 +28,8 @@ public class PedidoProveedorController {
     @Autowired
     private PedidoProveedorService pedidoProveedorService;
     
+    @Autowired
+    private ProveedorService proveedorService; 
 
     @GetMapping
     public ResponseEntity<List<PedidoProveedor>>getAllPedidos(){
@@ -52,7 +55,15 @@ public class PedidoProveedorController {
     public ResponseEntity<PedidoProveedor>postPedido(@RequestBody PedidoProveedor pedidoProveedor){
         PedidoProveedor buscado = pedidoProveedorService.buscarPedido(pedidoProveedor.getIdPedidoProveedor());
         if (buscado == null ) {
-            return new ResponseEntity<>(pedidoProveedorService.guardarPedido(pedidoProveedor), HttpStatus.CREATED);
+            
+            if (pedidoProveedor.getProveedor() != null ) { /*&& proveedorService.getProveedorById(pedidoProveedor.getProveedor().getIdProveedor()) != null*/
+            pedidoProveedor.setProveedor(
+                proveedorService.getProveedorById(pedidoProveedor.getProveedor().getIdProveedor())
+            );
+        }
+        
+        return new ResponseEntity<>(pedidoProveedorService.guardarPedido(pedidoProveedor), HttpStatus.CREATED);
+        
         }
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
