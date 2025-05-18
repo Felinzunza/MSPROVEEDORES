@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.MSPROVEEDORES.MSPROVEEDORES.model.EnumEstado;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedor;
+import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedorDetalle;
 import com.MSPROVEEDORES.MSPROVEEDORES.service.PedidoProveedorService;
 
 @RestController
@@ -66,7 +67,7 @@ public class PedidoProveedorController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping("/{id}/cambiarEstado") //llamarlo desde la url asi: http://localhost:8080/api/pedidos/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corrsponda a la enum)
+    @PatchMapping("/{id}/cambiarEstado") //llamarlo desde la url asi: http://localhost:8080/api/pedidos/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corresponda al enum)
     public ResponseEntity<PedidoProveedor>cambiarEstado(@PathVariable int id, @RequestParam EnumEstado estado){
         PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
         if (pedido == null) {
@@ -76,12 +77,54 @@ public class PedidoProveedorController {
         return new ResponseEntity<>(pedidoProveedorService.guardarPedido(pedido), HttpStatus.OK);
     }
 
+    //obtener detalle de un pedido
+    @GetMapping("/{id}/productos")
+    public ResponseEntity<List<PedidoProveedorDetalle>> obtenerProductosDePedido(@PathVariable int id) {
+    PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
+    if (pedido == null) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    return new ResponseEntity<>(pedido.getDetallePedidoProveedor(), HttpStatus.OK);
+    }
 
 
+    //Agregar un producto al pedido
+    @PostMapping("/{id}/productos") //agregarlo asi: 
+    public ResponseEntity<PedidoProveedor> postProducto(@PathVariable int id, @RequestBody PedidoProveedorDetalle nuevoDetalle) {
+        PedidoProveedor pedido = pedidoProveedorService.agregarProducto(id, nuevoDetalle);
+        if (pedido == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(pedido, HttpStatus.OK);
+    }
+    //Buscar un producto en el pedido
+    @GetMapping("/{id}/productos/{idProducto}")
+    public ResponseEntity<PedidoProveedorDetalle> getProducto(@PathVariable int id, @PathVariable int idProducto) {
+        PedidoProveedorDetalle detalle = pedidoProveedorService.buscarProducto(id, idProducto);
+        if (detalle == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(detalle, HttpStatus.OK);
+    }
 
-
-
-
-
+    //Eliminar un producto del pedido
+    @DeleteMapping("/{id}/productos/{idProducto}")
+    public ResponseEntity<PedidoProveedorDetalle> deleteProducto(@PathVariable int id, @PathVariable int idProducto) {
+        PedidoProveedorDetalle detalle = pedidoProveedorService.eliminarProducto(id, idProducto);
+        if (detalle == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(detalle, HttpStatus.OK);
+    }
     
+    //Cambiar la cantidad de un producto en el pedido
+    @PatchMapping("/{id}/productos/{idProducto}")
+    public ResponseEntity<PedidoProveedorDetalle> updateProducto(@PathVariable int id, @PathVariable int idProducto, @RequestBody PedidoProveedorDetalle nuevoDetalle) {
+        PedidoProveedorDetalle detalle = pedidoProveedorService.modificarCantidad(id, idProducto, nuevoDetalle.getCantidad());
+        if (detalle == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(detalle, HttpStatus.OK);
+    }
+
 }
