@@ -22,7 +22,7 @@ import com.MSPROVEEDORES.MSPROVEEDORES.service.PedidoProveedorService;
 import com.MSPROVEEDORES.MSPROVEEDORES.service.ProveedorService;
 
 @RestController
-@RequestMapping("/api/pedidos")
+@RequestMapping("/api/pedidosproveedores")
 public class PedidoProveedorController {
 
     @Autowired
@@ -78,7 +78,7 @@ public class PedidoProveedorController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping("/{id}/cambiarEstado") //llamarlo desde la url asi: http://localhost:8080/api/pedidos/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corresponda al enum)
+    @PatchMapping("/{id}/cambiarEstado") //llamarlo desde la url asi: http://localhost:8082/api/pedidosproveedores/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corresponda al enum)
     public ResponseEntity<PedidoProveedor>cambiarEstado(@PathVariable int id, @RequestParam EnumEstado estado){
         PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
         if (pedido == null) {
@@ -119,7 +119,7 @@ public class PedidoProveedorController {
     }
 
     //Eliminar un producto del pedido
-    @DeleteMapping("/{id}/productos/{idProducto}")
+@DeleteMapping("/{id}/productos/{idProducto}")
     public ResponseEntity<PedidoProveedorDetalle> deleteProducto(@PathVariable int id, @PathVariable int idProducto) {
         PedidoProveedorDetalle detalle = pedidoProveedorService.eliminarProducto(id, idProducto);
         if (detalle == null) {
@@ -129,13 +129,17 @@ public class PedidoProveedorController {
     }
     
     //Cambiar la cantidad de un producto en el pedido
-    @PatchMapping("/{id}/productos/{idProducto}")
-    public ResponseEntity<PedidoProveedorDetalle> updateProducto(@PathVariable int id, @PathVariable int idProducto, @RequestBody PedidoProveedorDetalle nuevoDetalle) {
-        PedidoProveedorDetalle detalle = pedidoProveedorService.modificarCantidad(id, idProducto, nuevoDetalle.getCantidad());
-        if (detalle == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(detalle, HttpStatus.OK);
+ @PatchMapping("/{id}/productos/{idProducto}")
+ public ResponseEntity<PedidoProveedorDetalle> updateProducto(
+    @PathVariable int id,
+    @PathVariable int idProducto,
+    @RequestParam int cantidad) {
+    
+    PedidoProveedorDetalle detalle = pedidoProveedorService.modificarCantidad(id, idProducto, cantidad);
+    if (detalle == null) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    return new ResponseEntity<>(detalle, HttpStatus.OK);
+}
 
 }

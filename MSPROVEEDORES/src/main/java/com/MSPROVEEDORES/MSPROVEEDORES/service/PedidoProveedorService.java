@@ -106,6 +106,7 @@ public class PedidoProveedorService {
         for (PedidoProveedorDetalle detalle : pedido.getDetallePedidoProveedor()) {
             if (detalle.getCod_Producto() == idProducto) {
                 detalle.setCantidad(nuevaCantidad);
+                pedidoProveedorRepository.save(pedido);
                 return detalle;
             }
         }

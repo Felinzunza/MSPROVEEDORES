@@ -29,7 +29,7 @@ private int cod_Producto;
 
 @Column(nullable = false)
 private int cantidad;
-///asdasdasdsa
+
 @ManyToOne
 @JoinColumn(name = "idPedProFk")
 @JsonBackReference
