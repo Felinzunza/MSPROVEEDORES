@@ -47,9 +47,9 @@ public class ProveedorController {
         return new ResponseEntity<>(proveedor, HttpStatus.OK);
     }
 
-    @GetMapping("/rut/{rut}")
-    public ResponseEntity<Proveedor> getProveedorByRut(@PathVariable String rut) {
-        Proveedor proveedor = proveedorService.getProveedorByRut(rut);
+    @GetMapping("/rut/{rut}") //rut hazlo como lista 
+    public ResponseEntity<List<Proveedor>> getProveedorByRut(@PathVariable String rut) {
+        List<Proveedor>proveedor = proveedorService.getProveedorByRut(rut);
         if (proveedor == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

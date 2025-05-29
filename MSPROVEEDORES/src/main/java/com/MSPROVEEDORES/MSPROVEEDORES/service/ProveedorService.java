@@ -29,7 +29,7 @@ public class ProveedorService {
 
     }
 
-    public Proveedor getProveedorByRut(String rut) {
+    public List<Proveedor> getProveedorByRut(String rut) {
 
         return proveedorRepository.findByRut(rut);
     }

@@ -2,7 +2,7 @@ package com.MSPROVEEDORES.MSPROVEEDORES.repo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
+import java.util.List;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.Proveedor;
 
 
@@ -12,7 +12,7 @@ public interface ProveedorRepository extends JpaRepository<Proveedor, Integer> {
     
 
     Proveedor findById(int idProveedor);
-    Proveedor findByRut(String rut);
+    List<Proveedor>findByRut(String rut);
     
     
 }
