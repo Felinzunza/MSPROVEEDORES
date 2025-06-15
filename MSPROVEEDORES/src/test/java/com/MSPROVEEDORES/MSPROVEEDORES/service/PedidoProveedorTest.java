@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PedidoProveedorTest {
 
@@ -74,7 +75,7 @@ public class PedidoProveedorTest {
         pedidoProvGuardado.setDetallePedidoProveedor(List.of(detalle2));
 
         when(pedidoproveedorRepository.save(pedidoProv)).thenReturn(pedidoProvGuardado);
-        when(proveedorService.getProveedorById(1)).thenReturn(prov); // ← o usa el ID que tengas
+        when(proveedorService.getProveedorById(1)).thenReturn(prov); 
 
 
         PedidoProveedor resultado = pedidoProveedorService.guardarPedido(pedidoProv);
@@ -163,8 +164,8 @@ public class PedidoProveedorTest {
 
     }
 
-@Test
-void TestEliminarPedidoXId(){
+    @Test
+    void TestEliminarPedidoXId(){
     int idProveedor = 1;
     doNothing().when(pedidoproveedorRepository).deleteById(idProveedor);
 
@@ -172,7 +173,91 @@ void TestEliminarPedidoXId(){
 
     verify(pedidoproveedorRepository).deleteById(idProveedor);
 
-}
+    }
+
+    @Test
+    void TestAgregarProductoAlPedido(){
+
+        int idPedido = 0;
+        Proveedor prov = new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
+
+        ArrayList<PedidoProveedorDetalle>detalle = new ArrayList<>();
+
+        PedidoProveedor pedidoProv = new PedidoProveedor(
+            idPedido,
+            101,
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 1, 7),
+            detalle, // ← aún está vacía
+            EnumEstado.Iniciado,
+            prov
+        );
+
+        PedidoProveedorDetalle nuevoDetalle = new PedidoProveedorDetalle(
+            0, 5, 20, pedidoProv
+        );
+
+        detalle.add(nuevoDetalle); // Agregamos el nuevo detalle al pedido
+        pedidoProv.setDetallePedidoProveedor(detalle); // Actualizamos el pedido con el nuevo detalle
+
+
+        // Simula el pedido "guardado" con el detalle con ID autogenerado
+        PedidoProveedorDetalle detalleGuardado = new PedidoProveedorDetalle(
+            1, // ID autogenerado
+            5,
+            20,
+            pedidoProv
+        );
+        ArrayList<PedidoProveedorDetalle> detalleGuardadoList = new ArrayList<>();
+        detalleGuardadoList.add(detalleGuardado);
+
+        PedidoProveedor pedidoProvGuardado = new PedidoProveedor(
+            idPedido,
+            101,
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 1, 7),
+            detalleGuardadoList,
+            EnumEstado.Iniciado,
+            prov
+        );
+
+        when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedidoProv);
+        when(pedidoproveedorRepository.save(pedidoProv)).thenReturn(pedidoProvGuardado);
+
+        PedidoProveedor resultado = pedidoProveedorService.agregarProducto(idPedido, nuevoDetalle);
+
+        List<PedidoProveedorDetalle> detallesResultado = resultado.getDetallePedidoProveedor();
+
+
+        PedidoProveedorDetalle detallep = detallesResultado.get(0);
+        assertThat(detallep.getIdDetalle()).isEqualTo(1); 
+        assertThat(detallep.getIdInventario()).isEqualTo(5);
+        assertThat(detallep.getCantidad()).isEqualTo(20);
+        verify(pedidoproveedorRepository).save(pedidoProv);
+
+        
+    
+
+    }
+
+  /*  @Test
+    void TestBuscarProductoDelPedido(){
+
+
+    }
+
+    @Test
+    void TestAjustarCantidadProducto(){
+
+    }
+
+    @Test
+    void TestEliminarProductoDelPedido(){
+
+    }*/
+
+    
+
 
 
 
