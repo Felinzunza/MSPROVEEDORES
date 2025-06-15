@@ -25,7 +25,7 @@ public class PedidoProveedorDetalle {
 private int idDetalle;
 
 @Column(nullable = false)
-private int cod_Producto;
+private int idInventario;
 
 @Column(nullable = false)
 private int cantidad;

@@ -70,7 +70,7 @@ public class PedidoProveedorService {
         }
         // Buscamos el producto en la lista de detalles del pedido
         for (PedidoProveedorDetalle detalle : pedido.getDetallePedidoProveedor()) {
-            if (detalle.getCod_Producto() == idProducto) {
+            if (detalle.getIdInventario() == idProducto) {
                 return detalle;
             }
         }
@@ -85,7 +85,7 @@ public class PedidoProveedorService {
 
         PedidoProveedorDetalle detalleAEliminar = null;
         for (PedidoProveedorDetalle detalle : pedido.getDetallePedidoProveedor()) {
-            if (detalle.getCod_Producto() == idProducto) {
+            if (detalle.getIdInventario() == idProducto) {
                 detalleAEliminar = detalle;
                 break;
             }
@@ -104,7 +104,7 @@ public class PedidoProveedorService {
         if (pedido == null) return null;
 
         for (PedidoProveedorDetalle detalle : pedido.getDetallePedidoProveedor()) {
-            if (detalle.getCod_Producto() == idProducto) {
+            if (detalle.getIdInventario() == idProducto) {
                 detalle.setCantidad(nuevaCantidad);
                 pedidoProveedorRepository.save(pedido);
                 return detalle;

@@ -129,7 +129,8 @@ public class PedidoProveedorController {
     }
     
     //Cambiar la cantidad de un producto en el pedido
- @PatchMapping("/{id}/productos/{idProducto}")
+ @PatchMapping("/{id}/productos/{idProducto}") //http://localhost:8082/api/pedidosproveedores/{id}/productos/{idProducto}?cantidad=valor
+
  public ResponseEntity<PedidoProveedorDetalle> updateProducto(
     @PathVariable int id,
     @PathVariable int idProducto,
