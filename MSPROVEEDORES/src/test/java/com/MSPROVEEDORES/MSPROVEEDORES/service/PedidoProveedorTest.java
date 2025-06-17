@@ -269,15 +269,69 @@ public class PedidoProveedorTest {
 
     }
 
-    /*@Test
+    @Test
     void TestAjustarCantidadProducto(){
+        int idPedido = 1;
+        int idProducto = 101;
+        Proveedor prov = new Proveedor(0, "123123123-9", "ECOSAS", 76543321, "ecosas@gmail.com");
+        PedidoProveedor pedido = new PedidoProveedor(
+            idPedido, 101, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 7),
+            new ArrayList<>(), EnumEstado.Iniciado, prov
+        );
+        PedidoProveedorDetalle detalle = new PedidoProveedorDetalle(
+            1, idProducto, 50, pedido
+        );
+        pedido.setDetallePedidoProveedor(List.of(detalle));
+
+        when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedido);
+
+        PedidoProveedorDetalle detalleAjustado = pedidoProveedorService.modificarCantidad(idPedido, idProducto, 30);
+
+        // Verificar que la cantidad se haya ajustado correctamente
+        assertThat(detalleAjustado.getCantidad()).isEqualTo(30);
+        verify(pedidoproveedorRepository).findById(idPedido);
 
     }
 
     @Test
     void TestEliminarProductoDelPedido(){
+        int idPedido = 0;
+        int idProducto = 101;
+        Proveedor prov = new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
 
-    }*/
+        ArrayList<PedidoProveedorDetalle>detalle = new ArrayList<>();
+
+        PedidoProveedor pedido = new PedidoProveedor(
+            idPedido,
+            101,
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 1, 7),
+            detalle, // ← aún está vacía
+            EnumEstado.Iniciado,
+            prov
+        );
+
+        PedidoProveedorDetalle nuevoDetalle = new PedidoProveedorDetalle(
+            0, idProducto, 20, pedido
+        );
+
+        detalle.add(nuevoDetalle); // Agregamos el nuevo detalle al pedido
+        pedido.setDetallePedidoProveedor(detalle);
+        
+        when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedido);
+
+        // Simular la eliminación del producto
+        pedidoProveedorService.eliminarProducto(idPedido, idProducto);
+
+        assertThat(pedido.getDetallePedidoProveedor()).doesNotContain(nuevoDetalle);
+        verify(pedidoproveedorRepository).findById(idPedido);
+        
+        
+
+        
+    }
+
+
 
     
 
