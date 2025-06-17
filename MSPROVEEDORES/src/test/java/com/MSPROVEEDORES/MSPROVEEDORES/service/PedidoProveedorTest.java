@@ -235,18 +235,42 @@ public class PedidoProveedorTest {
         assertThat(detallep.getCantidad()).isEqualTo(20);
         verify(pedidoproveedorRepository).save(pedidoProv);
 
-        
-    
-
-    }
-
-  /*  @Test
-    void TestBuscarProductoDelPedido(){
-
-
     }
 
     @Test
+    void TestBuscarProductoDelPedido(){
+        int idPedido = 1;
+        int idProducto = 101;
+        Proveedor prov = new Proveedor(0, "123123123-9", "ECOSAS", 76543321, "ecosas@gmail.com");
+        PedidoProveedor pedido = new PedidoProveedor(
+            idPedido, 101, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 7),
+            new ArrayList<>(), EnumEstado.Iniciado, prov
+        );
+
+        PedidoProveedorDetalle detalle = new PedidoProveedorDetalle(
+            1, idProducto, 50, pedido
+        );
+        pedido.setDetallePedidoProveedor(List.of(detalle));
+
+
+        when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedido);
+
+        PedidoProveedorDetalle detalleBuscado = pedidoProveedorService.buscarProducto(idPedido, idProducto);
+
+
+       //quiero verificar que el idinventario me devuelva el producto correcto
+       assertThat(detalleBuscado.getIdInventario()).isEqualTo(101);
+       assertThat(detalleBuscado.getCantidad()).isEqualTo(50);
+       assertThat(detalleBuscado.getPedidoProveedor()).isEqualTo(pedido);
+       verify(pedidoproveedorRepository).findById(idPedido);
+
+
+
+
+
+    }
+
+    /*@Test
     void TestAjustarCantidadProducto(){
 
     }

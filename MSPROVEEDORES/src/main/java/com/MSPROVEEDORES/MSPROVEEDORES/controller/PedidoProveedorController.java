@@ -109,7 +109,7 @@ public class PedidoProveedorController {
         return new ResponseEntity<>(pedido, HttpStatus.OK);
     }
     //Buscar un producto en el pedido
-    @GetMapping("/{id}/productos/{idProducto}")
+    @GetMapping("/{id}/productos/{idProducto}") //http://localhost:8082/api/pedidosproveedores/{id}/productos/{idProducto}
     public ResponseEntity<PedidoProveedorDetalle> getProducto(@PathVariable int id, @PathVariable int idProducto) {
         PedidoProveedorDetalle detalle = pedidoProveedorService.buscarProducto(id, idProducto);
         if (detalle == null) {
