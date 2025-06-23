@@ -74,7 +74,6 @@ public class PedidoProveedorTest {
         pedidoProvGuardado.setDetallePedidoProveedor(List.of(detalle2));
 
         when(pedidoproveedorRepository.save(pedidoProv)).thenReturn(pedidoProvGuardado);
-        when(proveedorService.getProveedorById(1)).thenReturn(prov); 
 
 
         PedidoProveedor resultado = pedidoProveedorService.guardarPedido(pedidoProv);
@@ -177,7 +176,7 @@ public class PedidoProveedorTest {
     @Test
     void TestAgregarProductoAlPedido(){
 
-        int idPedido = 0;
+        int idPedido = 1;
         Proveedor prov = new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
 
         ArrayList<PedidoProveedorDetalle>detalle = new ArrayList<>();
@@ -295,7 +294,7 @@ public class PedidoProveedorTest {
 
     @Test
     void TestEliminarProductoDelPedido(){
-        int idPedido = 0;
+        int idPedido = 1;
         int idProducto = 101;
         Proveedor prov = new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
 
