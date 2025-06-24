@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import java.util.List;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PedidoProveedorTest {
@@ -42,7 +43,7 @@ public class PedidoProveedorTest {
     void testGuardarPedidoProveedor(){
 
         //Objeto creado
-        Proveedor prov = new Proveedor(0, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
+        Proveedor prov = new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
 
 
         PedidoProveedor pedidoProv = new PedidoProveedor(0, 101, LocalDate.of(2025, 01, 01), LocalDate.of(2025, 01, 07), new ArrayList<>(), EnumEstado.Iniciado, prov);
@@ -74,6 +75,7 @@ public class PedidoProveedorTest {
         pedidoProvGuardado.setDetallePedidoProveedor(List.of(detalle2));
 
         when(pedidoproveedorRepository.save(pedidoProv)).thenReturn(pedidoProvGuardado);
+        when(proveedorService.getProveedorById(1)).thenReturn(prov); 
 
 
         PedidoProveedor resultado = pedidoProveedorService.guardarPedido(pedidoProv);
@@ -164,12 +166,31 @@ public class PedidoProveedorTest {
 
     @Test
     void TestEliminarPedidoXId(){
-    int idProveedor = 1;
-    doNothing().when(pedidoproveedorRepository).deleteById(idProveedor);
+    int idPedido = 1;
+    Proveedor prov = new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
 
-    pedidoProveedorService.eliminarPedido(idProveedor);
 
-    verify(pedidoproveedorRepository).deleteById(idProveedor);
+    PedidoProveedor pedidoProv = new PedidoProveedor(idPedido, 101, LocalDate.of(2025, 01, 01), LocalDate.of(2025, 01, 07), new ArrayList<>(), EnumEstado.Iniciado, prov);
+        
+    PedidoProveedorDetalle detalle = new PedidoProveedorDetalle(
+            0,            // idDetalle (autogenerado, por eso puede ser 0)
+            3,            // idInventario
+            50,           // cantidad
+            pedidoProv        // asignamos el pedido al que pertenece (clave)
+        );
+
+        
+    pedidoProv.setDetallePedidoProveedor(List.of(detalle));
+
+
+    doNothing().when(pedidoproveedorRepository).deleteById(idPedido);
+    when(pedidoproveedorRepository.findById(idPedido)).thenReturn(null);
+
+    pedidoProveedorService.eliminarPedido(idPedido);
+
+    
+    assertThat(pedidoproveedorRepository.findById(idPedido)).isNull();
+    verify(pedidoproveedorRepository).deleteById(idPedido);
 
     }
 
@@ -262,10 +283,6 @@ public class PedidoProveedorTest {
        assertThat(detalleBuscado.getPedidoProveedor()).isEqualTo(pedido);
        verify(pedidoproveedorRepository).findById(idPedido);
 
-
-
-
-
     }
 
     @Test
@@ -325,20 +342,10 @@ public class PedidoProveedorTest {
         assertThat(pedido.getDetallePedidoProveedor()).doesNotContain(nuevoDetalle);
         verify(pedidoproveedorRepository).findById(idPedido);
         
-        
 
-        
     }
 
 
-
-    
-
-
-
-
-    
-    
     
 }
 
