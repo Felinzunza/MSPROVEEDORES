@@ -103,7 +103,7 @@ public class ProveedorServiceTest {
     @Test
     void testEliminarProveedor() {
     int id = 1;
-    Proveedor prov = new Proveedor(0, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
+    Proveedor prov = new Proveedor(id, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
     
     doNothing().when(proveedorRepository).deleteById(id);
     when(proveedorRepository.findById(id)).thenReturn(null);
