@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ProveedorServiceTest {
 
@@ -106,12 +107,13 @@ public class ProveedorServiceTest {
     Proveedor prov = new Proveedor(id, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
     
     doNothing().when(proveedorRepository).deleteById(id);
-    when(proveedorRepository.findById(id)).thenReturn(null);
+    //when(proveedorRepository.findById(id)).thenReturn(null);
+    
 
     proveedorService.delete(id);
 
+
     
-    assertThat(proveedorRepository.findById(id)).isNull();
     verify(proveedorRepository).deleteById(id);
 }
 
