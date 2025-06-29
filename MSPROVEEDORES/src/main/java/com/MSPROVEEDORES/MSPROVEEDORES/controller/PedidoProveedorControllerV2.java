@@ -26,6 +26,7 @@ import com.MSPROVEEDORES.MSPROVEEDORES.assemblers.PedidoProveedorAssembler;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.EnumEstado;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedor;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedorDetalle;
+import com.MSPROVEEDORES.MSPROVEEDORES.model.Proveedor;
 import com.MSPROVEEDORES.MSPROVEEDORES.service.PedidoProveedorService;
 import com.MSPROVEEDORES.MSPROVEEDORES.service.ProveedorService;
 
@@ -55,102 +56,142 @@ public class PedidoProveedorControllerV2{
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<EntityModel<PedidoProveedor>> getPedidoXId(@PathVariable int id){
         PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
-        if (pedido == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(assembler.toModel(pedido), HttpStatus.OK);
+       if (pedido == null) {
+           return ResponseEntity.notFound().build();
+       }
+       return ResponseEntity.ok(assembler.toModel(pedido));
     }
 
-    @PostMapping
-    public ResponseEntity<PedidoProveedor>postPedido(@RequestBody PedidoProveedor pedidoProveedor){
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<PedidoProveedor>> postPedido(@RequestBody PedidoProveedor pedidoProveedor){
+
         PedidoProveedor buscado = pedidoProveedorService.buscarPedido(pedidoProveedor.getIdPedidoProveedor());
+        
         if (buscado == null ) {
             
-            if (pedidoProveedor.getProveedor() != null ) { /*&& proveedorService.getProveedorById(pedidoProveedor.getProveedor().getIdProveedor()) != null*/
-            pedidoProveedor.setProveedor(
-                proveedorService.getProveedorById(pedidoProveedor.getProveedor().getIdProveedor())
-            );
+            if (pedidoProveedor.getProveedor() != null ) { 
+                
+               Proveedor prov = proveedorService.getProveedorById(pedidoProveedor.getProveedor().getIdProveedor());
+                if (prov != null) {
+                    pedidoProveedor.setProveedor(prov);
+                } else {
+                    return ResponseEntity.badRequest().build();
+                }
+                
+           
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(assembler.toModel(pedidoProveedorService.guardarPedido(pedidoProveedor)));
+
         }
         
-        return new ResponseEntity<>(pedidoProveedorService.guardarPedido(pedidoProveedor), HttpStatus.CREATED);
-        
-        }
-        return new ResponseEntity<>(HttpStatus.CONFLICT);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void>deletePedido(@PathVariable int id){
+    @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<Void> deletePedido(@PathVariable int id){
         PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
         if(pedido == null ){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
         pedidoProveedorService.eliminarPedido(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/cambiarEstado") //llamarlo desde la url asi: http://localhost:8082/api/pedidosproveedores/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corresponda al enum)
-    public ResponseEntity<PedidoProveedor>cambiarEstado(@PathVariable int id, @RequestParam EnumEstado estado){
+    @PatchMapping(value ="/{id}/cambiarEstado", produces = MediaTypes.HAL_JSON_VALUE) //llamarlo desde la url asi: http://localhost:8082/api/pedidosproveedores/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corresponda al enum)
+    public ResponseEntity<EntityModel<PedidoProveedor>> cambiarEstado(@PathVariable int id, @RequestParam EnumEstado estado){
         PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
         if (pedido == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
         pedido.setEstado(estado);
-        return new ResponseEntity<>(pedidoProveedorService.guardarPedido(pedido), HttpStatus.OK);
+        return ResponseEntity.ok(assembler.toModel(pedidoProveedorService.guardarPedido(pedido)));
     }
 
-    //obtener detalle de un pedido
-    @GetMapping("/{id}/productos")
-    public ResponseEntity<List<PedidoProveedorDetalle>> obtenerProductosDePedido(@PathVariable int id) {
+    //obtener detalle de productos de un pedido
+    @GetMapping(value = "/{id}/productos", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<CollectionModel<PedidoProveedorDetalle>> obtenerProductosDePedido(@PathVariable int id) {
     PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
+   
     if (pedido == null) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    return new ResponseEntity<>(pedido.getDetallePedidoProveedor(), HttpStatus.OK);
+        return ResponseEntity.notFound().build();
     }
+    List<PedidoProveedorDetalle> detalles = pedido.getDetallePedidoProveedor();
+    
+    // No se usa EntityModel porque PedidoProveedorDetalle no tiene assembler propio, pero puede usarse CollectionModel directo
+    return ResponseEntity.ok(
+        CollectionModel.of(detalles,
+            linkTo(methodOn(PedidoProveedorControllerV2.class).obtenerProductosDePedido(id)).withSelfRel()
+        )
+    );
+}
 
 
     //Agregar un producto al pedido
-    @PostMapping("/{id}/productos") //agregarlo asi: 
-    public ResponseEntity<PedidoProveedor> postProducto(@PathVariable int id, @RequestBody PedidoProveedorDetalle nuevoDetalle) {
+    @PostMapping(value = "/{id}/productos", produces = MediaTypes.HAL_JSON_VALUE) 
+    public ResponseEntity<EntityModel<PedidoProveedor>> postProducto(@PathVariable int id, @RequestBody PedidoProveedorDetalle nuevoDetalle) {
         PedidoProveedor pedido = pedidoProveedorService.agregarProducto(id, nuevoDetalle);
         if (pedido == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<>(pedido, HttpStatus.OK);
+        return ResponseEntity.ok(assembler.toModel(pedido)); // reutiliza el assembler de PedidoProveedor
     }
+
     //Buscar un producto en el pedido
-    @GetMapping("/{id}/productos/{idProducto}") //http://localhost:8082/api/pedidosproveedores/{id}/productos/{idProducto}
-    public ResponseEntity<PedidoProveedorDetalle> getProducto(@PathVariable int id, @PathVariable int idProducto) {
-        PedidoProveedorDetalle detalle = pedidoProveedorService.buscarProducto(id, idProducto);
-        if (detalle == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(detalle, HttpStatus.OK);
+    @GetMapping(value = "/{id}/productos/{idProducto}", produces = MediaTypes.HAL_JSON_VALUE) //http://localhost:8082/api/pedidosproveedores/{id}/productos/{idProducto}
+    public ResponseEntity<CollectionModel<PedidoProveedorDetalle>> getProducto(@PathVariable int id, @PathVariable int idProducto) {
+    
+    PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
+    if (pedido == null) {
+        return ResponseEntity.notFound().build();
+    }
+
+    List<PedidoProveedorDetalle> detalles = pedido.getDetallePedidoProveedor();
+    
+    // No se usa EntityModel porque PedidoProveedorDetalle no tiene assembler propio, pero puede usarse CollectionModel directo
+    return ResponseEntity.ok(
+        CollectionModel.of(detalles,
+            linkTo(methodOn(PedidoProveedorControllerV2.class).obtenerProductosDePedido(id)).withSelfRel()
+        )
+    );
     }
 
     //Eliminar un producto del pedido
-@DeleteMapping("/{id}/productos/{idProducto}")
-    public ResponseEntity<PedidoProveedorDetalle> deleteProducto(@PathVariable int id, @PathVariable int idProducto) {
+    @DeleteMapping(value = "/{id}/productos/{idProducto}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<Void> deleteProducto(@PathVariable int id, @PathVariable int idProducto) {
+        PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
+         if (pedido == null) {
+        return ResponseEntity.notFound().build();
+        }
+
         PedidoProveedorDetalle detalle = pedidoProveedorService.eliminarProducto(id, idProducto);
         if (detalle == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<>(detalle, HttpStatus.OK);
+
+        return ResponseEntity.noContent().build(); 
     }
+
     
     //Cambiar la cantidad de un producto en el pedido
- @PatchMapping("/{id}/productos/{idProducto}") //http://localhost:8082/api/pedidosproveedores/{id}/productos/{idProducto}?cantidad=valor
-
- public ResponseEntity<PedidoProveedorDetalle> updateProducto(
+ @PatchMapping(value = "/{id}/productos/{idProducto}", produces = MediaTypes.HAL_JSON_VALUE) //http://localhost:8082/api/pedidosproveedores/{id}/productos/{idProducto}?cantidad=valor
+ public ResponseEntity<EntityModel<PedidoProveedorDetalle>> updateProducto(
     @PathVariable int id,
     @PathVariable int idProducto,
     @RequestParam int cantidad) {
-    
+
+    PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
+    if (pedido == null) {
+        return ResponseEntity.notFound().build();
+    }
     PedidoProveedorDetalle detalle = pedidoProveedorService.modificarCantidad(id, idProducto, cantidad);
     if (detalle == null) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return ResponseEntity.notFound().build();
     }
-    return new ResponseEntity<>(detalle, HttpStatus.OK);
+    return ResponseEntity.ok(EntityModel.of(detalle));
 }
-
 }
