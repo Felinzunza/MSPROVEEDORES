@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
-@RequestMapping("api/proveedores")
+@RequestMapping("api/v1/proveedores")
 public class ProveedorController {
 
     @Autowired
@@ -34,7 +34,7 @@ public class ProveedorController {
         if (proveedores.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(proveedores, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(proveedores, HttpStatus.OK);
         
     }
     

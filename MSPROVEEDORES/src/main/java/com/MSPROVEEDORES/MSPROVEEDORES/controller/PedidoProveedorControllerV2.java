@@ -102,7 +102,7 @@ public class PedidoProveedorControllerV2{
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping(value ="/{id}/cambiarEstado", produces = MediaTypes.HAL_JSON_VALUE) //llamarlo desde la url asi: http://localhost:8082/api/pedidosproveedores/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corresponda al enum)
+    @PatchMapping(value ="/{id}/cambiarEstado", produces = MediaTypes.HAL_JSON_VALUE) //llamarlo desde la url asi: http://localhost:8082/api/v2/pedidosproveedores/1/cambiarEstado?estado=EnviadoAProveedor(o cualquier valor que corresponda al enum)
     public ResponseEntity<EntityModel<PedidoProveedor>> cambiarEstado(@PathVariable int id, @RequestParam EnumEstado estado){
         PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
         if (pedido == null) {
@@ -142,7 +142,7 @@ public class PedidoProveedorControllerV2{
     }
 
     //Buscar un producto en el pedido
-    @GetMapping(value = "/{id}/productos/{idProducto}", produces = MediaTypes.HAL_JSON_VALUE) //http://localhost:8082/api/pedidosproveedores/{id}/productos/{idProducto}
+    @GetMapping(value = "/{id}/productos/{idProducto}", produces = MediaTypes.HAL_JSON_VALUE) //http://localhost:8082/api/v2/pedidosproveedores/{id}/productos/{idProducto}
     public ResponseEntity<CollectionModel<PedidoProveedorDetalle>> getProducto(@PathVariable int id, @PathVariable int idProducto) {
     
     PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
@@ -178,7 +178,7 @@ public class PedidoProveedorControllerV2{
 
     
     //Cambiar la cantidad de un producto en el pedido
- @PatchMapping(value = "/{id}/productos/{idProducto}", produces = MediaTypes.HAL_JSON_VALUE) //http://localhost:8082/api/pedidosproveedores/{id}/productos/{idProducto}?cantidad=valor
+ @PatchMapping(value = "/{id}/productos/{idProducto}", produces = MediaTypes.HAL_JSON_VALUE) //http://localhost:8082/api/v2/pedidosproveedores/{id}/productos/{idProducto}?cantidad=valor
  public ResponseEntity<EntityModel<PedidoProveedorDetalle>> updateProducto(
     @PathVariable int id,
     @PathVariable int idProducto,

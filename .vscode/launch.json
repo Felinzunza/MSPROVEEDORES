@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MsproveedoresApplication<MSPROVEEDORES>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.MSPROVEEDORES.MSPROVEEDORES.MsproveedoresApplication",
+            "projectName": "MSPROVEEDORES",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
