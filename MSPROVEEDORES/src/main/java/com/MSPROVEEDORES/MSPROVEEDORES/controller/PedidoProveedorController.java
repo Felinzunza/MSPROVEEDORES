@@ -164,7 +164,7 @@ public class PedidoProveedorController {
 
     PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
         if (pedido == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); 
         }
     
     PedidoProveedorDetalle detalle = pedidoProveedorService.modificarCantidad(id, idProducto, cantidad);

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.MSPROVEEDORES.MSPROVEEDORES.assemblers.PedidoProveedorAssembler;
+import com.MSPROVEEDORES.MSPROVEEDORES.assemblers.PedidoProveedorDetalleAssembler;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.EnumEstado;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedor;
 import com.MSPROVEEDORES.MSPROVEEDORES.model.PedidoProveedorDetalle;
@@ -42,6 +43,9 @@ public class PedidoProveedorControllerV2{
 
     @Autowired
     private PedidoProveedorAssembler assembler;
+
+    @Autowired
+    private PedidoProveedorDetalleAssembler detalleAssembler;
 
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public CollectionModel<EntityModel<PedidoProveedor>> getAllPedidos() {
@@ -114,19 +118,19 @@ public class PedidoProveedorControllerV2{
 
     //obtener detalle de productos de un pedido
     @GetMapping(value = "/{id}/productos", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<CollectionModel<PedidoProveedorDetalle>> obtenerProductosDePedido(@PathVariable int id) {
+    public ResponseEntity<CollectionModel<EntityModel<PedidoProveedorDetalle>>> obtenerProductosDePedido(@PathVariable int id) {
     PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
    
     if (pedido == null) {
         return ResponseEntity.notFound().build();
     }
-    List<PedidoProveedorDetalle> detalles = pedido.getDetallePedidoProveedor();
+     List<EntityModel<PedidoProveedorDetalle>> detalles = pedido.getDetallePedidoProveedor().stream()
+        .map(detalleAssembler::toModel)
+        .collect(Collectors.toList());
     
-    // No se usa EntityModel porque PedidoProveedorDetalle no tiene assembler propio, pero puede usarse CollectionModel directo
     return ResponseEntity.ok(
         CollectionModel.of(detalles,
-            linkTo(methodOn(PedidoProveedorControllerV2.class).obtenerProductosDePedido(id)).withSelfRel()
-        )
+            linkTo(methodOn(PedidoProveedorControllerV2.class).obtenerProductosDePedido(id)).withSelfRel())
     );
 }
 
@@ -143,21 +147,15 @@ public class PedidoProveedorControllerV2{
 
     //Buscar un producto en el pedido
     @GetMapping(value = "/{id}/productos/{idProducto}", produces = MediaTypes.HAL_JSON_VALUE) //http://localhost:8082/api/v2/pedidosproveedores/{id}/productos/{idProducto}
-    public ResponseEntity<CollectionModel<PedidoProveedorDetalle>> getProducto(@PathVariable int id, @PathVariable int idProducto) {
+    public ResponseEntity<EntityModel<PedidoProveedorDetalle>> getProducto(@PathVariable int id, @PathVariable int idProducto) {
     
     PedidoProveedor pedido = pedidoProveedorService.buscarPedido(id);
     if (pedido == null) {
         return ResponseEntity.notFound().build();
     }
 
-    List<PedidoProveedorDetalle> detalles = pedido.getDetallePedidoProveedor();
-    
-    // No se usa EntityModel porque PedidoProveedorDetalle no tiene assembler propio, pero puede usarse CollectionModel directo
-    return ResponseEntity.ok(
-        CollectionModel.of(detalles,
-            linkTo(methodOn(PedidoProveedorControllerV2.class).obtenerProductosDePedido(id)).withSelfRel()
-        )
-    );
+    return ResponseEntity.ok(detalleAssembler.toModel(pedidoProveedorService.buscarProducto(id, idProducto)))
+    ;
     }
 
     //Eliminar un producto del pedido
@@ -192,6 +190,6 @@ public class PedidoProveedorControllerV2{
     if (detalle == null) {
         return ResponseEntity.notFound().build();
     }
-    return ResponseEntity.ok(EntityModel.of(detalle));
+    return  ResponseEntity.ok(detalleAssembler.toModel(detalle));
 }
 }
