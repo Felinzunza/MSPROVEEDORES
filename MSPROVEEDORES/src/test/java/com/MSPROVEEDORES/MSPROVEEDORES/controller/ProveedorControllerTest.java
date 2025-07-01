@@ -55,6 +55,10 @@ public class ProveedorControllerTest {
                 .andExpect(jsonPath("$[0].nombProveedor").value(proveedor.getNombProveedor()))
                 .andExpect(jsonPath("$[0].email").value(proveedor.getEmail()))
                 .andExpect(jsonPath("$[0].telefono").value(proveedor.getTelefono()));
+        
+        when(proveedorService.getAllProveedores()).thenReturn(List.of());
+        mockMvc.perform(get("/api/v1/proveedores"))
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -67,6 +71,10 @@ public class ProveedorControllerTest {
                 .andExpect(jsonPath("$.nombProveedor").value(proveedor.getNombProveedor()))
                 .andExpect(jsonPath("$.email").value(proveedor.getEmail()))
                 .andExpect(jsonPath("$.telefono").value(proveedor.getTelefono()));
+        
+        when(proveedorService.getProveedorById(99)).thenReturn(null);
+        mockMvc.perform(get("/api/v1/proveedores/99"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -79,10 +87,15 @@ public class ProveedorControllerTest {
                 .andExpect(jsonPath("$.nombProveedor").value(proveedor.getNombProveedor()))
                 .andExpect(jsonPath("$.email").value(proveedor.getEmail()))
                 .andExpect(jsonPath("$.telefono").value(proveedor.getTelefono()));
+        
+        when(proveedorService.getProveedorByRut("00000000-0")).thenReturn(null);
+        mockMvc.perform(get("/api/v1/proveedores/rut/00000000-0"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     public void testPostProveedor() throws Exception {
+        when(proveedorService.getProveedorById(proveedor.getIdProveedor())).thenReturn(null);
         when(proveedorService.save(any(Proveedor.class))).thenReturn(proveedor);
 
         mockMvc.perform(post("/api/v1/proveedores")
@@ -93,6 +106,12 @@ public class ProveedorControllerTest {
                 .andExpect(jsonPath("$.nombProveedor").value(proveedor.getNombProveedor()))
                 .andExpect(jsonPath("$.email").value(proveedor.getEmail()))
                 .andExpect(jsonPath("$.telefono").value(proveedor.getTelefono()));
+
+        when(proveedorService.getProveedorById(proveedor.getIdProveedor())).thenReturn(proveedor);
+        mockMvc.perform(post("/api/v1/proveedores")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(proveedor)))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -108,6 +127,12 @@ public class ProveedorControllerTest {
                 .andExpect(jsonPath("$.nombProveedor").value(proveedor.getNombProveedor()))
                 .andExpect(jsonPath("$.email").value(proveedor.getEmail()))
                 .andExpect(jsonPath("$.telefono").value(proveedor.getTelefono()));
+        
+        when(proveedorService.getProveedorById(99)).thenReturn(null);
+        mockMvc.perform(put("/api/v1/proveedores/99")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(proveedor)))
+                .andExpect(status().isNotFound());
     
     }
     @Test
@@ -120,6 +145,9 @@ public class ProveedorControllerTest {
                 .andExpect(status().isNoContent());
         
         verify(proveedorService, times(1)).delete(1);
+        when(proveedorService.getProveedorById(1)).thenReturn(null);
+        mockMvc.perform(delete("/api/v1/proveedores/1"))
+                .andExpect(status().isNotFound());
 
     }
 }

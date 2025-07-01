@@ -88,7 +88,12 @@ public class PedidoProveedorControllerTest {
                 .andExpect(jsonPath("$[0].detallePedidoProveedor[0].idInventario").value(1))
                 .andExpect(jsonPath("$[0].detallePedidoProveedor[0].idInventario").value(1))
                 .andExpect(jsonPath("$[0].detallePedidoProveedor[0].cantidad").value(10));
+
+        when(pedidoProveedorService.listaPedidos()).thenReturn(List.of());
+        mockMvc.perform(get("/api/v1/pedidosproveedores"))
+           .andExpect(status().isNoContent());
     }
+
     
     @Test
     public void testGetPedidoXId() throws Exception {
@@ -106,8 +111,14 @@ public class PedidoProveedorControllerTest {
                 .andExpect(jsonPath("$.detallePedidoProveedor[0].idDetalle").value(pedidoProveedorDetalle.getIdDetalle()))
                 .andExpect(jsonPath("$.detallePedidoProveedor[0].idInventario").value(pedidoProveedorDetalle.getIdInventario()))
                 .andExpect(jsonPath("$.detallePedidoProveedor[0].cantidad").value(pedidoProveedorDetalle.getCantidad()));
+        
+        when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
+        mockMvc.perform(get("/api/v1/pedidosproveedores/99"))
+                .andExpect(status().isNotFound());
 
     }
+
+  
 
     @Test
     public void testPostPedido() throws Exception {
@@ -132,6 +143,39 @@ public class PedidoProveedorControllerTest {
     }
 
     @Test
+    public void testPostPedido_ProveedorNulo() throws Exception {
+    pedidoProveedor.setProveedor(null);
+
+    mockMvc.perform(post("/api/v1/pedidosproveedores")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(pedidoProveedor)))
+            .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    public void testPostPedido_ProveedorNoExiste() throws Exception {
+    when(pedidoProveedorService.buscarPedido(1)).thenReturn(null);
+    when(proveedorService.getProveedorById(1)).thenReturn(null); // proveedor no encontrado
+
+    mockMvc.perform(post("/api/v1/pedidosproveedores")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(pedidoProveedor)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testPostPedido_ConflictoPedidoYaExiste() throws Exception {
+    when(pedidoProveedorService.buscarPedido(1)).thenReturn(pedidoProveedor); // ya existe
+
+    mockMvc.perform(post("/api/v1/pedidosproveedores")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(pedidoProveedor)))
+            .andExpect(status().isConflict());
+    }
+
+
+    @Test
     public void testDeletePedido() throws Exception {
         when(pedidoProveedorService.buscarPedido(1)).thenReturn(pedidoProveedor);
         doNothing().when(pedidoProveedorService).eliminarPedido(1);
@@ -140,7 +184,13 @@ public class PedidoProveedorControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(pedidoProveedorService, times(1)).eliminarPedido(1);
+        
+        when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
+        mockMvc.perform(delete("/api/v1/pedidosproveedores/99"))
+                .andExpect(status().isNotFound());
     }
+
+
 
     @Test
     public void testCambiarEstado() throws Exception {
@@ -150,6 +200,11 @@ public class PedidoProveedorControllerTest {
         mockMvc.perform(patch("/api/v1/pedidosproveedores/1/cambiarEstado?estado=EnviadoAProveedor"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value(EnumEstado.EnviadoAProveedor.toString()));
+
+        when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
+        mockMvc.perform(patch("/api/v1/pedidosproveedores/99/cambiarEstado?estado=EnviadoAProveedor"))
+                .andExpect(status().isNotFound());
+
     }
 
     @Test
@@ -160,34 +215,45 @@ public class PedidoProveedorControllerTest {
                 .andExpect(jsonPath("$[0].idDetalle").value(pedidoProveedorDetalle.getIdDetalle()))
                 .andExpect(jsonPath("$[0].idInventario").value(pedidoProveedorDetalle.getIdInventario())) //este es producto
                 .andExpect(jsonPath("$[0].cantidad").value(pedidoProveedorDetalle.getCantidad()));
-
         verify(pedidoProveedorService, times(1)).buscarPedido(1);
+
+        when(pedidoProveedorService.buscarPedido(99)).thenReturn(null); // 
+        mockMvc.perform(get("/api/v1/pedidosproveedores/99/productos"))
+                .andExpect(status().isNotFound());
     }
 
-@Test
-public void testPostProducto() throws Exception {
-    PedidoProveedorDetalle nuevoDetalle = new PedidoProveedorDetalle();
-    nuevoDetalle.setIdDetalle(2);
-    nuevoDetalle.setIdInventario(2);
-    nuevoDetalle.setCantidad(5);
 
-    // Simular que el producto fue agregado
-    pedidoProveedor.getDetallePedidoProveedor().add(nuevoDetalle);
 
-    when(pedidoProveedorService.buscarPedido(1)).thenReturn(pedidoProveedor);
-    when(pedidoProveedorService.agregarProducto(eq(1), any(PedidoProveedorDetalle.class)))
-        .thenReturn(pedidoProveedor);
+    @Test
+    public void testPostProducto() throws Exception {
+        PedidoProveedorDetalle nuevoDetalle = new PedidoProveedorDetalle();
+        nuevoDetalle.setIdDetalle(2);
+        nuevoDetalle.setIdInventario(2);
+        nuevoDetalle.setCantidad(5);
 
-    mockMvc.perform(post("/api/v1/pedidosproveedores/1/productos")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(nuevoDetalle)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.detallePedidoProveedor[1].idDetalle").value(2))
-            .andExpect(jsonPath("$.detallePedidoProveedor[1].idInventario").value(2))
-            .andExpect(jsonPath("$.detallePedidoProveedor[1].cantidad").value(5));
+        // Simular que el producto fue agregado
+        pedidoProveedor.getDetallePedidoProveedor().add(nuevoDetalle);
 
+        when(pedidoProveedorService.buscarPedido(1)).thenReturn(pedidoProveedor);
+        when(pedidoProveedorService.agregarProducto(eq(1), any(PedidoProveedorDetalle.class)))
+            .thenReturn(pedidoProveedor);
+
+        mockMvc.perform(post("/api/v1/pedidosproveedores/1/productos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(nuevoDetalle)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.detallePedidoProveedor[1].idDetalle").value(2))
+                .andExpect(jsonPath("$.detallePedidoProveedor[1].idInventario").value(2))
+                .andExpect(jsonPath("$.detallePedidoProveedor[1].cantidad").value(5));
+
+        when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
+        mockMvc.perform(post("/api/v1/pedidosproveedores/99/productos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(nuevoDetalle)))
+                .andExpect(status().isNotFound());
+
+     }
     
-    }
 
     @Test
     public void testGetProducto() throws Exception {
@@ -199,7 +265,19 @@ public void testPostProducto() throws Exception {
                 .andExpect(jsonPath("$.idDetalle").value(pedidoProveedorDetalle.getIdDetalle()))
                 .andExpect(jsonPath("$.idInventario").value(pedidoProveedorDetalle.getIdInventario()))
                 .andExpect(jsonPath("$.cantidad").value(pedidoProveedorDetalle.getCantidad()));
+
+        when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
+        mockMvc.perform(get("/api/v1/pedidosproveedores/99/productos/1"))
+        .andExpect(status().isNotFound());
+
+        when(pedidoProveedorService.buscarProducto(1, 99)).thenReturn(null);
+        mockMvc.perform(get("/api/v1/pedidosproveedores/1/productos/99"))
+           .andExpect(status().isNotFound());
     }
+
+
+
+ 
 
     @Test
     public void testDeleteProducto() throws Exception {
@@ -212,7 +290,17 @@ public void testPostProducto() throws Exception {
                 .andExpect(status().isOk());
 
         verify(pedidoProveedorService, times(1)).eliminarProducto(1, 1);
+
+        when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
+        mockMvc.perform(delete("/api/v1/pedidosproveedores/99/productos/1"))
+        .andExpect(status().isNotFound());
+
+        when(pedidoProveedorService.buscarProducto(1, 99)).thenReturn(null);
+        mockMvc.perform(get("/api/v1/pedidosproveedores/1/productos/99"))
+        .andExpect(status().isNotFound());
     }
+
+ 
 
     @Test
     public void testUpdateProducto() throws Exception {
@@ -233,5 +321,23 @@ public void testPostProducto() throws Exception {
                 .andExpect(jsonPath("$.idDetalle").value(updatedDetalle.getIdDetalle()))
                 .andExpect(jsonPath("$.idInventario").value(updatedDetalle.getIdInventario()))
                 .andExpect(jsonPath("$.cantidad").value(updatedDetalle.getCantidad()));
+        verify(pedidoProveedorService, times(1)).modificarCantidad(1, 1, 20);
+
+        when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
+        mockMvc.perform(patch("/api/v1/pedidosproveedores/99/productos/1")
+        .param("cantidad", "20"))
+        .andExpect(status().isNotFound());
+
+        when(pedidoProveedorService.buscarProducto(1, 99)).thenReturn(null);
+        mockMvc.perform(patch("/api/v1/pedidosproveedores/1/productos/99")
+        .param("cantidad", "20"))
+        .andExpect(status().isNotFound());
+
+     
     }
+
+
+
+
+
 }

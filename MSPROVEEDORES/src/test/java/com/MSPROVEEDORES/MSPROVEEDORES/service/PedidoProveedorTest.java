@@ -22,6 +22,7 @@ import java.util.List;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class PedidoProveedorTest {
 
@@ -89,6 +90,23 @@ public class PedidoProveedorTest {
         assertThat(resultado.getProveedor()).isEqualTo(prov2);
         verify(pedidoproveedorRepository).save(pedidoProv);
 
+
+        // Verificar cuando el proveedor no se haya enlazado correctamente
+    Proveedor provInexistente = new Proveedor(0, "000000000-0", "Proveedor Desconocido", 12345678, "noexiste@dominio.com");
+    PedidoProveedor pedidosinprov = new PedidoProveedor(0, 101, LocalDate.of(2025, 01, 01), LocalDate.of(2025, 01, 07), new ArrayList<>(), EnumEstado.Iniciado, provInexistente);
+    
+    when(proveedorService.getProveedorById(0)).thenReturn(null); // Simular que el proveedor no existe
+    PedidoProveedor resultadonulo = pedidoProveedorService.guardarPedido(pedidosinprov);
+    assertThat(resultadonulo).isNull();
+
+        // cuando detalles del pedido son nulos
+    PedidoProveedor pedidoConDetallesNulos = new PedidoProveedor();
+    pedidoConDetallesNulos.setProveedor(new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM"));
+    pedidoConDetallesNulos.setDetallePedidoProveedor(null);  // Establecer detalles como null
+
+    when(pedidoproveedorRepository.save(pedidoConDetallesNulos)).thenReturn(null); 
+    PedidoProveedor resultadoDetallesNulos = pedidoProveedorService.guardarPedido(pedidoConDetallesNulos);
+    assertThat(resultadoDetallesNulos).isNull(); 
     }
 
    @Test
@@ -131,8 +149,12 @@ public class PedidoProveedorTest {
 
     assertThat(resultado).hasSize(2).containsExactly(pedido1, pedido2);
     verify(pedidoproveedorRepository).findAll();
-    
+
+   
+
     }
+
+    
 
     @Test
     void TestBuscarPedidoXId(){
@@ -161,6 +183,10 @@ public class PedidoProveedorTest {
     assertThat(resultado).isNotNull();
     assertThat(resultado.getDetallePedidoProveedor()).isNotNull();
     verify(pedidoproveedorRepository).findById(idPedido);
+
+    
+
+
 
     }
 
@@ -254,6 +280,9 @@ public class PedidoProveedorTest {
         assertThat(detallep.getCantidad()).isEqualTo(20);
         verify(pedidoproveedorRepository).save(pedidoProv);
 
+        when(pedidoproveedorRepository.findById(999)).thenReturn(null);
+        PedidoProveedor resultadonulo = pedidoProveedorService.agregarProducto(999, nuevoDetalle);
+        assertNull(resultadonulo);
     }
 
     @Test
@@ -283,29 +312,51 @@ public class PedidoProveedorTest {
        assertThat(detalleBuscado.getPedidoProveedor()).isEqualTo(pedido);
        verify(pedidoproveedorRepository).findById(idPedido);
 
+
+       //verificar que devuelva null cuando el pedido no existe
+        when(pedidoproveedorRepository.findById(999)).thenReturn(null);
+        PedidoProveedorDetalle resultadonulo = pedidoProveedorService.buscarProducto(999, idProducto);
+        assertNull(resultadonulo);
+
+        // Verificar que devuelva null cuando el producto no existe en el pedido
+        PedidoProveedorDetalle detalleNoExistente = pedidoProveedorService.buscarProducto(idPedido, 999);
+        assertThat(detalleNoExistente).isNull();
+        
+
     }
 
-    @Test
-    void TestAjustarCantidadProducto(){
-        int idPedido = 1;
-        int idProducto = 101;
-        Proveedor prov = new Proveedor(0, "123123123-9", "ECOSAS", 76543321, "ecosas@gmail.com");
-        PedidoProveedor pedido = new PedidoProveedor(
-            idPedido, 101, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 7),
-            new ArrayList<>(), EnumEstado.Iniciado, prov
-        );
-        PedidoProveedorDetalle detalle = new PedidoProveedorDetalle(
-            1, idProducto, 50, pedido
-        );
-        pedido.setDetallePedidoProveedor(List.of(detalle));
+@Test
+void TestAjustarCantidadProducto() {
+    int idPedido = 1;
+    int idProducto = 101;
+    Proveedor prov = new Proveedor(0, "123123123-9", "ECOSAS", 76543321, "ecosas@gmail.com");
 
-        when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedido);
+    // Crear pedido con detalle
+    PedidoProveedor pedido = new PedidoProveedor(
+        idPedido, 101, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 7),
+        new ArrayList<>(), EnumEstado.Iniciado, prov
+    );
+    PedidoProveedorDetalle detalle = new PedidoProveedorDetalle(1, idProducto, 50, pedido);
+    pedido.setDetallePedidoProveedor(List.of(detalle));
 
-        PedidoProveedorDetalle detalleAjustado = pedidoProveedorService.modificarCantidad(idPedido, idProducto, 30);
+    // Mockear la respuesta del repositorio
+    when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedido);
 
-        // Verificar que la cantidad se haya ajustado correctamente
-        assertThat(detalleAjustado.getCantidad()).isEqualTo(30);
-        verify(pedidoproveedorRepository).findById(idPedido);
+    // Modificar la cantidad del producto
+    PedidoProveedorDetalle detalleAjustado = pedidoProveedorService.modificarCantidad(idPedido, idProducto, 30);
+
+    // Verificar que la cantidad se haya ajustado correctamente
+    assertThat(detalleAjustado.getCantidad()).isEqualTo(30);
+    verify(pedidoproveedorRepository).findById(idPedido);
+
+    when(pedidoproveedorRepository.findById(999)).thenReturn(null);
+        PedidoProveedorDetalle resultadonulo = pedidoProveedorService.modificarCantidad(999, idProducto, idProducto);
+        assertNull(resultadonulo);
+    
+
+    // Verificar que el producto no existe en el pedido
+    PedidoProveedorDetalle detalleNoExistente = pedidoProveedorService.modificarCantidad(idPedido, 99, 30);
+    assertNull(detalleNoExistente);
 
     }
 
@@ -341,6 +392,23 @@ public class PedidoProveedorTest {
 
         assertThat(pedido.getDetallePedidoProveedor()).doesNotContain(nuevoDetalle);
         verify(pedidoproveedorRepository).findById(idPedido);
+
+
+        //testear null cuando se llama a un pedido que no existe
+         when(pedidoproveedorRepository.findById(999)).thenReturn(null);
+        PedidoProveedorDetalle resultadonulo = pedidoProveedorService.eliminarProducto(999, 1);
+        assertNull(resultadonulo);
+
+        //testear null cuando el producto no existe
+        PedidoProveedorDetalle resultadoInvalido = pedidoProveedorService.eliminarProducto(1, 999);
+        assertNull(resultadoInvalido);
+
+
+    
+
+        
+
+        
         
 
     }
