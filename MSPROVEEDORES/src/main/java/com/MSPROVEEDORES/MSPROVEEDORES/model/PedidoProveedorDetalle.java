@@ -1,6 +1,7 @@
 package com.MSPROVEEDORES.MSPROVEEDORES.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,7 +33,7 @@ private int cantidad;
 
 @ManyToOne
 @JoinColumn(name = "idPedProFk")
-@JsonBackReference
+@JsonIgnore
 private PedidoProveedor pedidoProveedor;
 
 

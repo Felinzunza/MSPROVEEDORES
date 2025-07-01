@@ -45,7 +45,6 @@ public class PedidoProveedor {
     private LocalDate fechaRecepcionEsperada;
 
     @OneToMany(mappedBy = "pedidoProveedor", cascade = CascadeType.ALL, orphanRemoval = true) 
-    @JsonManagedReference //evita bucle infinito al serializar y me devuelve solo el id, no el cuerpo json
     private List<PedidoProveedorDetalle> detallePedidoProveedor;
  
     @Enumerated(EnumType.STRING)
