@@ -89,17 +89,6 @@ public class ProveedorServiceTest {
 
 
 
-   /*  @Test
-    void testModificarProveedor(){
-
-        int id = 1;
-        Proveedor prov = new Proveedor(id, "123123123-9", "ECOSAS", 123456789, "ECOSAS@GMAIL.COM");
-        Proveedor provActualizado = new Proveedor(id, "123123123-9", "ECOCOSAS", 123456789, "ECOCOSAS@GMAIL.COM" );
-        
-        when(proveedorRepository.findBy)
-            
-    }*/
-
     @Test
     void testEliminarProveedor() {
     int id = 1;

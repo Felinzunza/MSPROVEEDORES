@@ -18,7 +18,7 @@ public class PedidoProveedorDetalleAssembler implements RepresentationModelAssem
             linkTo(methodOn(PedidoProveedorControllerV2.class)
                 .getProducto(
                     detalle.getPedidoProveedor().getIdPedidoProveedor(),
-                    detalle.getIdInventario()
+                    detalle.getCodProducto()
                 )).withSelfRel(),
 
             linkTo(methodOn(PedidoProveedorControllerV2.class)

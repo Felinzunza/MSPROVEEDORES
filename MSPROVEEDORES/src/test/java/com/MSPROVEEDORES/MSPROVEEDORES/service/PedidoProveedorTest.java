@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
@@ -275,8 +276,8 @@ public class PedidoProveedorTest {
 
 
         PedidoProveedorDetalle detallep = detallesResultado.get(0);
-        assertThat(detallep.getIdDetalle()).isEqualTo(1); 
-        assertThat(detallep.getIdInventario()).isEqualTo(5);
+        assertThat(detallep.getIdDetalle()).isEqualTo(1);
+        assertThat(detallep.getCodProducto()).isEqualTo(5);
         assertThat(detallep.getCantidad()).isEqualTo(20);
         verify(pedidoproveedorRepository).save(pedidoProv);
 
@@ -306,8 +307,8 @@ public class PedidoProveedorTest {
         PedidoProveedorDetalle detalleBuscado = pedidoProveedorService.buscarProducto(idPedido, idProducto);
 
 
-       //quiero verificar que el idinventario me devuelva el producto correcto
-       assertThat(detalleBuscado.getIdInventario()).isEqualTo(101);
+       //quiero verificar que el codProducto me devuelva el producto correcto
+       assertThat(detalleBuscado.getCodProducto()).isEqualTo(101);
        assertThat(detalleBuscado.getCantidad()).isEqualTo(50);
        assertThat(detalleBuscado.getPedidoProveedor()).isEqualTo(pedido);
        verify(pedidoproveedorRepository).findById(idPedido);
@@ -361,57 +362,57 @@ void TestAjustarCantidadProducto() {
     }
 
     @Test
-    void TestEliminarProductoDelPedido(){
-        int idPedido = 1;
-        int idProducto = 101;
-        Proveedor prov = new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
+void TestEliminarProductoDelPedido() {
+    int idPedido = 1;
+    int idProducto = 101;
+    Proveedor prov = new Proveedor(1, "123123123-9", "ECOSAS", 76543321, "ECOSAS@GMAIL.COM");
 
-        ArrayList<PedidoProveedorDetalle>detalle = new ArrayList<>();
+    ArrayList<PedidoProveedorDetalle> detalle = new ArrayList<>();
 
-        PedidoProveedor pedido = new PedidoProveedor(
-            idPedido,
-            101,
-            LocalDate.of(2025, 1, 1),
-            LocalDate.of(2025, 1, 7),
-            detalle, // ← aún está vacía
-            EnumEstado.Iniciado,
-            prov
-        );
+    PedidoProveedor pedido = new PedidoProveedor(
+        idPedido,
+        101,
+        LocalDate.of(2025, 1, 1),
+        LocalDate.of(2025, 1, 7),
+        detalle,
+        EnumEstado.Iniciado,
+        prov
+    );
 
-        PedidoProveedorDetalle nuevoDetalle = new PedidoProveedorDetalle(
-            0, idProducto, 20, pedido
-        );
+    PedidoProveedorDetalle nuevoDetalle = new PedidoProveedorDetalle(0, idProducto, 20, pedido);
+    detalle.add(nuevoDetalle);
+    pedido.setDetallePedidoProveedor(detalle);
 
-        detalle.add(nuevoDetalle); // Agregamos el nuevo detalle al pedido
-        pedido.setDetallePedidoProveedor(detalle);
-        
-        when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedido);
+    // Caso 1: Producto válido eliminado correctamente
+    when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedido);
+    pedidoProveedorService.eliminarProducto(idPedido, idProducto);
 
-        // Simular la eliminación del producto
-        pedidoProveedorService.eliminarProducto(idPedido, idProducto);
+    assertThat(pedido.getDetallePedidoProveedor()).doesNotContain(nuevoDetalle);
+    verify(pedidoproveedorRepository).findById(idPedido);
+    verify(pedidoproveedorRepository).save(pedido);
 
-        assertThat(pedido.getDetallePedidoProveedor()).doesNotContain(nuevoDetalle);
-        verify(pedidoproveedorRepository).findById(idPedido);
+    // Caso 2: Pedido no existe
+    when(pedidoproveedorRepository.findById(999)).thenReturn(null);
+    PedidoProveedorDetalle resultadonulo = pedidoProveedorService.eliminarProducto(999, 1);
+    assertNull(resultadonulo);
 
+    // Caso 3: Producto no existe
+    // Re-crear pedido SIN productos
+    PedidoProveedor pedidoSinProducto = new PedidoProveedor(
+        idPedido,
+        101,
+        LocalDate.of(2025, 1, 1),
+        LocalDate.of(2025, 1, 7),
+        new ArrayList<>(), // lista vacía
+        EnumEstado.Iniciado,
+        prov
+    );
 
-        //testear null cuando se llama a un pedido que no existe
-         when(pedidoproveedorRepository.findById(999)).thenReturn(null);
-        PedidoProveedorDetalle resultadonulo = pedidoProveedorService.eliminarProducto(999, 1);
-        assertNull(resultadonulo);
-
-        //testear null cuando el producto no existe
-        PedidoProveedorDetalle resultadoInvalido = pedidoProveedorService.eliminarProducto(1, 999);
-        assertNull(resultadoInvalido);
-
-
-    
-
-        
-
-        
-        
-
-    }
+    when(pedidoproveedorRepository.findById(idPedido)).thenReturn(pedidoSinProducto);
+    PedidoProveedorDetalle resultadoInvalido = pedidoProveedorService.eliminarProducto(idPedido, 999);
+    assertNull(resultadoInvalido);
+    verify(pedidoproveedorRepository, times(2)).findById(idPedido);
+}
 
 
     

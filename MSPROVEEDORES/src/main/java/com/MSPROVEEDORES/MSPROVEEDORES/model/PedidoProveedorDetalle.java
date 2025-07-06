@@ -1,6 +1,5 @@
 package com.MSPROVEEDORES.MSPROVEEDORES.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -26,7 +25,7 @@ public class PedidoProveedorDetalle {
 private int idDetalle;
 
 @Column(nullable = false)
-private int idInventario;
+private Integer codProducto;
 
 @Column(nullable = false)
 private int cantidad;

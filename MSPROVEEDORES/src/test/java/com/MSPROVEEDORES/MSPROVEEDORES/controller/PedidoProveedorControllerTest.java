@@ -53,7 +53,7 @@ public class PedidoProveedorControllerTest {
 
         pedidoProveedorDetalle = new PedidoProveedorDetalle();
         pedidoProveedorDetalle.setIdDetalle(1);
-        pedidoProveedorDetalle.setIdInventario(1);
+        pedidoProveedorDetalle.setCodProducto(1);
         pedidoProveedorDetalle.setCantidad(10);
 
 
@@ -85,8 +85,8 @@ public class PedidoProveedorControllerTest {
                 .andExpect(jsonPath("$[0].fechaRecepcionEsperada").value(pedidoProveedor.getFechaRecepcionEsperada().toString()))
                 .andExpect(jsonPath("$[0].estado").value(pedidoProveedor.getEstado().toString()))
                 .andExpect(jsonPath("$[0].proveedor.idProveedor").value(pedidoProveedor.getProveedor().getIdProveedor()))
-                .andExpect(jsonPath("$[0].detallePedidoProveedor[0].idInventario").value(1))
-                .andExpect(jsonPath("$[0].detallePedidoProveedor[0].idInventario").value(1))
+                .andExpect(jsonPath("$[0].detallePedidoProveedor[0].idDetalle").value(1))
+                .andExpect(jsonPath("$[0].detallePedidoProveedor[0].codProducto").value(1))
                 .andExpect(jsonPath("$[0].detallePedidoProveedor[0].cantidad").value(10));
 
         when(pedidoProveedorService.listaPedidos()).thenReturn(List.of());
@@ -109,7 +109,7 @@ public class PedidoProveedorControllerTest {
                 .andExpect(jsonPath("$.estado").value(pedidoProveedor.getEstado().toString()))
                 .andExpect(jsonPath("$.proveedor.idProveedor").value(pedidoProveedor.getProveedor().getIdProveedor()))
                 .andExpect(jsonPath("$.detallePedidoProveedor[0].idDetalle").value(pedidoProveedorDetalle.getIdDetalle()))
-                .andExpect(jsonPath("$.detallePedidoProveedor[0].idInventario").value(pedidoProveedorDetalle.getIdInventario()))
+                .andExpect(jsonPath("$.detallePedidoProveedor[0].codProducto").value(pedidoProveedorDetalle.getCodProducto()))
                 .andExpect(jsonPath("$.detallePedidoProveedor[0].cantidad").value(pedidoProveedorDetalle.getCantidad()));
         
         when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
@@ -138,8 +138,8 @@ public class PedidoProveedorControllerTest {
             .andExpect(jsonPath("$.estado").value(pedidoProveedor.getEstado().toString()))
             .andExpect(jsonPath("$.proveedor.idProveedor").value(pedidoProveedor.getProveedor().getIdProveedor()))
             .andExpect(jsonPath("$.detallePedidoProveedor[0].idDetalle").value(pedidoProveedorDetalle.getIdDetalle()))
-            .andExpect(jsonPath("$.detallePedidoProveedor[0].idInventario").value(pedidoProveedorDetalle.getIdInventario()))
-            .andExpect(jsonPath("$.detallePedidoProveedor[0].cantidad").value(pedidoProveedorDetalle.getCantidad()));            
+            .andExpect(jsonPath("$.detallePedidoProveedor[0].codProducto").value(pedidoProveedorDetalle.getCodProducto()))
+            .andExpect(jsonPath("$.detallePedidoProveedor[0].cantidad").value(pedidoProveedorDetalle.getCantidad()));
     }
 
     @Test
@@ -213,7 +213,7 @@ public class PedidoProveedorControllerTest {
         mockMvc.perform(get("/api/v1/pedidosproveedores/1/productos"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].idDetalle").value(pedidoProveedorDetalle.getIdDetalle()))
-                .andExpect(jsonPath("$[0].idInventario").value(pedidoProveedorDetalle.getIdInventario())) //este es producto
+                .andExpect(jsonPath("$[0].codProducto").value(pedidoProveedorDetalle.getCodProducto())) //este es producto
                 .andExpect(jsonPath("$[0].cantidad").value(pedidoProveedorDetalle.getCantidad()));
         verify(pedidoProveedorService, times(1)).buscarPedido(1);
 
@@ -228,7 +228,7 @@ public class PedidoProveedorControllerTest {
     public void testPostProducto() throws Exception {
         PedidoProveedorDetalle nuevoDetalle = new PedidoProveedorDetalle();
         nuevoDetalle.setIdDetalle(2);
-        nuevoDetalle.setIdInventario(2);
+        nuevoDetalle.setCodProducto(2);
         nuevoDetalle.setCantidad(5);
 
         // Simular que el producto fue agregado
@@ -243,7 +243,7 @@ public class PedidoProveedorControllerTest {
                 .content(objectMapper.writeValueAsString(nuevoDetalle)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.detallePedidoProveedor[1].idDetalle").value(2))
-                .andExpect(jsonPath("$.detallePedidoProveedor[1].idInventario").value(2))
+                .andExpect(jsonPath("$.detallePedidoProveedor[1].codProducto").value(2))
                 .andExpect(jsonPath("$.detallePedidoProveedor[1].cantidad").value(5));
 
         when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
@@ -263,7 +263,7 @@ public class PedidoProveedorControllerTest {
         mockMvc.perform(get("/api/v1/pedidosproveedores/1/productos/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.idDetalle").value(pedidoProveedorDetalle.getIdDetalle()))
-                .andExpect(jsonPath("$.idInventario").value(pedidoProveedorDetalle.getIdInventario()))
+                .andExpect(jsonPath("$.codProducto").value(pedidoProveedorDetalle.getCodProducto()))
                 .andExpect(jsonPath("$.cantidad").value(pedidoProveedorDetalle.getCantidad()));
 
         when(pedidoProveedorService.buscarPedido(99)).thenReturn(null);
@@ -310,7 +310,7 @@ public class PedidoProveedorControllerTest {
 
         PedidoProveedorDetalle updatedDetalle = new PedidoProveedorDetalle();
         updatedDetalle.setIdDetalle(1);
-        updatedDetalle.setIdInventario(1);
+        updatedDetalle.setCodProducto(1);
         updatedDetalle.setCantidad(20); 
 
         when(pedidoProveedorService.modificarCantidad(1, 1, 20)).thenReturn(updatedDetalle);
@@ -319,7 +319,7 @@ public class PedidoProveedorControllerTest {
                 .param("cantidad", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.idDetalle").value(updatedDetalle.getIdDetalle()))
-                .andExpect(jsonPath("$.idInventario").value(updatedDetalle.getIdInventario()))
+                .andExpect(jsonPath("$.codProducto").value(updatedDetalle.getCodProducto()))
                 .andExpect(jsonPath("$.cantidad").value(updatedDetalle.getCantidad()));
         verify(pedidoProveedorService, times(1)).modificarCantidad(1, 1, 20);
 

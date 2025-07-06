@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -55,6 +54,9 @@ public class PedidoProveedor {
     @JoinColumn(name = "idProveedor") //se crea esta columna como FK en la tabla pedido_proveedor
     @JsonIdentityReference(alwaysAsId = true) //evita bucle infinito al serializar y me devuelve solo el id, no el cuerpo json
     private Proveedor proveedor;
+
+
+    
 
 
 }
